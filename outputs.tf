@@ -7,5 +7,5 @@ output "instance_arn" {
 }
 
 output "instance_dns" {
-    value = aws_instance.public_ip
+    value = aws_instance.blog.public_dns
 }
