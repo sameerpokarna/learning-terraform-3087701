@@ -14,11 +14,55 @@ data "aws_ami" "app_ami" {
   owners = ["979382823631"] # Bitnami
 }
 
+data "aws_vpc" "blog" {
+  default = true
+}
+
 resource "aws_instance" "blog" {
   ami           = data.aws_ami.app_ami.id
   instance_type = var.instance_type
+
+  vpc_security_group_ids = ["aws_security_group.blog.id"]
 
   tags = {
     Name = "HelloWorld"
   }
 }
+
+resource "aws_security_group" "blog" {
+  name = "blog"
+  description = "sec group for hosting the web server"
+
+  vpc_id = data.aws_vpc.default.id
+}
+
+resource "aws_security_group_rule" "allow_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.blog.id
+}
+
+resource "aws_security_group_rule" "allow_https" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.blog.id
+}
+
+resource "aws_security_group_rule" "allow_all_ob" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.blog.id
+}
+
